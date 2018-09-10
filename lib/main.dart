@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:korvihome/SettingsPage.dart';
 import 'package:korvihome/homeseer/homeseer.dart';
 import './tabs/home.dart' as _firstTab;
 import './tabs/dashboard.dart' as _secondTab;
@@ -119,7 +120,8 @@ class TabsState extends State<Tabs> {
     ),
 
     //Content of tabs
-    body: _selectedDrawerIndex == 0?
+    body: 
+    _selectedDrawerIndex == 0?
      new PageView(
         controller: _tabController,
         onPageChanged: onTabChanged,
@@ -128,31 +130,12 @@ class TabsState extends State<Tabs> {
           new _secondTab.Dashboard(),
           new _thirdTab.Settings()
         ],
-      ) : new HomeSeer(),
-
-    //Tabs
-    bottomNavigationBar: Theme.of(context).platform == TargetPlatform.iOS ?
-      new CupertinoTabBar(
-        activeColor: Colors.blueGrey,
-        currentIndex: _tab,
-        onTap: onTap,
-        items: TabItems.map((TabItem) {
-          return new BottomNavigationBarItem(
-            title: new Text(TabItem.title),
-            icon: new Icon(TabItem.icon),
-          );
-        }).toList(),
-      ):
-      new BottomNavigationBar(
-        currentIndex: _tab,
-        onTap: onTap,
-        items: TabItems.map((TabItem) {
-          return new BottomNavigationBarItem(
-            title: new Text(TabItem.title),
-            icon: new Icon(TabItem.icon),
-          );
-        }).toList(),
-    ),
+      ) : 
+    _selectedDrawerIndex == 1?
+        new HomeSeer() :
+    _selectedDrawerIndex == 2?
+        new HomeSeer() :
+        new SettingsPage(),
 
     //Drawer
     drawer: new Drawer(
@@ -200,10 +183,12 @@ class TabsState extends State<Tabs> {
           ),
           new Divider(),
           new ListTile(
-            leading: new Icon(Icons.exit_to_app),
-            title: new Text('Sign Out'),
+            leading: new Icon(Icons.settings),
+            title: new Text('Settings'),
             onTap: () {
-              Navigator.pop(context);
+              setState(() { _selectedDrawerIndex = 3; });
+              this._title_app = 'Settings';
+              Navigator.of(context).pop();
             }
           ),
         ],

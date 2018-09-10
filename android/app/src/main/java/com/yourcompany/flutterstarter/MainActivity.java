@@ -1,4 +1,4 @@
-package com.yourcompany.flutterstarter;
+package net.korvi.korvihome;
 
 import android.os.Bundle;
 
