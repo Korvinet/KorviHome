@@ -1,10 +1,7 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:korvihome/KorviHomeColors.dart';
 import 'package:korvihome/models/Settings.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:async';
+import 'package:korvihome/provider/SettingsService.dart';
 
 class SettingsPage extends StatefulWidget {
   @override
@@ -12,6 +9,8 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+
+  SettingsService settingsService = new SettingsService();
 
   final _formKey = GlobalKey<FormState>();
   TextEditingController homeSeerUrl;
@@ -22,37 +21,13 @@ class _SettingsPageState extends State<SettingsPage> {
   TextEditingController hassUser;
   TextEditingController hassPwd;
 
-  Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
-    return directory.path;
-  }
-
-  Future<File> get _localFile async {
-    final path = await _localPath;
-    return File('$path/settings.txt');
-  }
-
   @override
   void initState() {
-    super.initState();
+    super.initState();    
     
-    _readSettings().then((result){
-      setState(() { });
-    });
-  }
-
-  Future _readSettings() async {
-    try{
-      final file = await _localFile;
-      String data = await file.readAsString();
-      Map settingsMap = json.decode(data);
-      var settings = new Settings.fromJson(settingsMap);
+    settingsService.loadSettings().then((settings){
       _setValues(settings);
-      return true;
-    } catch(e){
-      _setValues(new Settings('', '', '', '', '', ''));
-      return false;
-    }
+    });
   }
 
   _setValues(Settings settings){
@@ -67,18 +42,12 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() { });
   }
 
-  _saveForm() async {
-    
-    final file = await _localFile;
-    
+  _saveForm() async {    
     Settings settings = new Settings(
         homeSeerUrl.text, homeSeerUser.text, homeSeerPwd.text,
         hassUrl.text, hassUser.text, hassPwd.text);
-
-    String fileData = json.encode(settings);
-
-    // Write the file
-    await file.writeAsString(fileData);
+    
+    settingsService.saveSettings(settings);
 
     final snackBar = SnackBar(content: Text('Settings saved.'));
     Scaffold.of(context).showSnackBar(snackBar);
@@ -152,7 +121,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   await _saveForm();
                 },
                 child: Text('Save'),
-                color: Colors.blue,
+                color: KorviHomeColors.BLUE,
                 textColor: Colors.white,
               ),
             ),

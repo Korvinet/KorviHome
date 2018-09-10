@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:korvihome/KorviHomeColors.dart';
 import 'package:korvihome/SettingsPage.dart';
-import 'package:korvihome/homeseer/homeseer.dart';
-import './tabs/home.dart' as _firstTab;
-import './tabs/dashboard.dart' as _secondTab;
-import './tabs/settings.dart' as _thirdTab;
-import './screens/about.dart' as _aboutPage;
-import './screens/support.dart' as _supportPage;
+import 'package:korvihome/favorites/FavoritesPage.dart';
+import 'package:korvihome/hass/HassPage.dart';
+import 'package:korvihome/homeseer/HomeSeerPage.dart';
 
 int _selectedDrawerIndex = 0;
 
@@ -15,21 +13,26 @@ void main() => runApp(new MaterialApp(
   theme: new ThemeData(
     primarySwatch: Colors.blueGrey,
     scaffoldBackgroundColor: Colors.white,
-    primaryColor: Colors.blueGrey, backgroundColor: Colors.white
+    primaryColor: KorviHomeColors.BLUE, 
+    backgroundColor: Colors.white
   ),
-  home: Tabs(),
+  home: Home(),
   onGenerateRoute: (RouteSettings settings) {
     switch (settings.name) {
       case '/favs': return new FromRightToLeft(
-        builder: (_) => new _aboutPage.About(),
+        builder: (_) => new FavoritesPage(),
         settings: settings,
       );
       case '/homeseer': return new FromRightToLeft(
-        builder: (_) => new HomeSeer(),
+        builder: (_) => new HomeSeerPage(),
         settings: settings,
       );
       case '/hass': return new FromRightToLeft(
-        builder: (_) => new _supportPage.Support(),
+        builder: (_) => new HassPage(),
+        settings: settings,
+      );
+      case '/settings': return new FromRightToLeft(
+        builder: (_) => new SettingsPage(),
         settings: settings,
       );
     }
@@ -80,29 +83,24 @@ class FromRightToLeft<T> extends MaterialPageRoute<T> {
   @override Duration get transitionDuration => const Duration(milliseconds: 400);
 }
 
-class Tabs extends StatefulWidget {
+class Home extends StatefulWidget {
   @override
-  TabsState createState() => new TabsState();
+  HomeState createState() => new HomeState();
 }
 
-class TabsState extends State<Tabs> {
-  
-  PageController _tabController;
+class HomeState extends State<Home> {
 
-  var _title_app = null;
-  int _tab = 0;
+  var _title_app;
   
   @override
   void initState() {
     super.initState();
-    _tabController = new PageController();
-    this._title_app = TabItems[0].title;
+    this._title_app = 'Favoritos';
   }
 
   @override
   void dispose(){
     super.dispose();
-    _tabController.dispose();
   }
 
   @override
@@ -122,20 +120,14 @@ class TabsState extends State<Tabs> {
     //Content of tabs
     body: 
     _selectedDrawerIndex == 0?
-     new PageView(
-        controller: _tabController,
-        onPageChanged: onTabChanged,
-        children: <Widget>[
-          new _firstTab.Home(),
-          new _secondTab.Dashboard(),
-          new _thirdTab.Settings()
-        ],
-      ) : 
+      new FavoritesPage() :
     _selectedDrawerIndex == 1?
-        new HomeSeer() :
+      new HomeSeerPage() :
     _selectedDrawerIndex == 2?
-        new HomeSeer() :
-        new SettingsPage(),
+      new HassPage() :
+    _selectedDrawerIndex == 3?
+      new SettingsPage() :
+      new SettingsPage(),
 
     //Drawer
     drawer: new Drawer(
@@ -143,15 +135,16 @@ class TabsState extends State<Tabs> {
         children: <Widget>[
           new Container(
             height: 120.0,
+            color: KorviHomeColors.BLUE,
             child: new DrawerHeader(
               padding: new EdgeInsets.all(0.0),
               decoration: new BoxDecoration(
-                color: new Color(0xFFECEFF1),
+                color: KorviHomeColors.BLUE,
               ),
               child: new Center(
-                child: new FlutterLogo(
-                  colors: Colors.blueGrey,
-                  size: 54.0,
+                child: new Image.asset(
+                  'assets/white.png',
+                  height: 90.0,
                 ),
               ),
             ),
@@ -161,6 +154,7 @@ class TabsState extends State<Tabs> {
             title: new Text('Favorites'),
             onTap: () {
               setState(() { _selectedDrawerIndex = 0; });
+              this._title_app = 'Favorites';
               Navigator.of(context).pop();
             }
           ),
@@ -174,11 +168,12 @@ class TabsState extends State<Tabs> {
             }
           ),
           new ListTile(
-            leading: new Icon(Icons.info),
+            leading: new Icon(Icons.home),
             title: new Text('HomeAssistant'),
             onTap: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, '/hass');
+              setState(() { _selectedDrawerIndex = 2; });
+              this._title_app = 'HomeAssistant';
+              Navigator.of(context).pop();
             }
           ),
           new Divider(),
@@ -194,41 +189,5 @@ class TabsState extends State<Tabs> {
         ],
       )
     )
-  );
-
-  void onTap(int tab){
-    _tabController.jumpToPage(tab);
-  }
-
-  void onTabChanged(int tab) {
-    setState((){
-      this._tab = tab;
-    });
-
-    switch (tab) {
-      case 0:
-        this._title_app = TabItems[0].title;
-      break;
-
-      case 1:
-        this._title_app = TabItems[1].title;
-      break;
-
-      case 2:
-        this._title_app = TabItems[2].title;
-      break;
-    }
-  }
+  );  
 }
-
-class TabItem {
-  const TabItem({ this.title, this.icon });
-  final String title;
-  final IconData icon;
-}
-
-const List<TabItem> TabItems = const <TabItem>[
-  const TabItem(title: 'Sala', icon: Icons.home),
-  const TabItem(title: 'SalaTv', icon: Icons.dashboard),
-  const TabItem(title: 'Cuarto', icon: Icons.settings)
-];

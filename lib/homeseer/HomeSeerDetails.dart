@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:korvihome/KorviHomeColors.dart';
 import 'package:korvihome/models/HomeSeerDevice.dart';
-import 'package:korvihome/provider/api.dart';
+import 'package:korvihome/provider/HomeSeerApi.dart';
+import 'package:korvihome/provider/SettingsService.dart';
 
 class HomeSeerDetails extends StatefulWidget {
 
@@ -16,13 +18,21 @@ class HomeSeerDetails extends StatefulWidget {
 class _HomeSeerDetailsState extends State<HomeSeerDetails> {
 
   _HomeSeerDetailsState(this.location);
+  SettingsService settingsService = new SettingsService();
+  HomeSeerApi api;
 
   List<HomeSeerDevice> data = new List();
   String location;
   String errorMessage;
 
   Future _loadData() async {
-    var api = new Api();
+    var settings = await settingsService.loadSettings();
+    if(settings.homeSeerUrl.isEmpty){
+      this.errorMessage = "You must configure HomeSeer Url in app settings.";
+      return;
+    }
+
+    this.api = new HomeSeerApi(settings.homeSeerUrl);
       errorMessage = null;
       var devices = await api.getHomeSeerDevices(this.location);
       if(devices == null){
@@ -61,7 +71,7 @@ class _HomeSeerDetailsState extends State<HomeSeerDetails> {
 
   Future<bool> toggleDevice(HomeSeerDevice device) async {
     var label = getToggleLabel(device.status, device.value);
-    if(await new Api().toggleHomeSeerDevice(device.ref, label)){
+    if(await this.api.toggleHomeSeerDevice(device.ref, label)){
       device.status = label;
       device.value = label == "on"? 255.0 : 0.0;
     }
@@ -98,11 +108,10 @@ class _HomeSeerDetailsState extends State<HomeSeerDetails> {
                   child: new Container(
                     decoration: BoxDecoration(
                       borderRadius: new BorderRadius.circular(5.0),
-                      color: isOn(this.data[index].status, this.data[index].value)? Colors.blue : Colors.grey,
+                      color: isOn(this.data[index].status, this.data[index].value)? KorviHomeColors.BLUE : Colors.grey,
                     ),
                     padding: EdgeInsets.all(2.0),
                     margin: EdgeInsets.all(4.0),
-                    /*color: isOn(this.data[index].status, this.data[index].value)? Colors.blue : Colors.grey,*/
                     child: new Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
