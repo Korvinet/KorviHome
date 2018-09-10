@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:korvihome/homeseer/homeseer.dart';
 import './tabs/home.dart' as _firstTab;
 import './tabs/dashboard.dart' as _secondTab;
 import './tabs/settings.dart' as _thirdTab;
 import './screens/about.dart' as _aboutPage;
 import './screens/support.dart' as _supportPage;
+
+int _selectedDrawerIndex = 0;
 
 void main() => runApp(new MaterialApp(
   title: 'KorviHome',
@@ -13,7 +16,7 @@ void main() => runApp(new MaterialApp(
     scaffoldBackgroundColor: Colors.white,
     primaryColor: Colors.blueGrey, backgroundColor: Colors.white
   ),
-  home: new Tabs(),
+  home: Tabs(),
   onGenerateRoute: (RouteSettings settings) {
     switch (settings.name) {
       case '/favs': return new FromRightToLeft(
@@ -21,7 +24,7 @@ void main() => runApp(new MaterialApp(
         settings: settings,
       );
       case '/homeseer': return new FromRightToLeft(
-        builder: (_) => new _supportPage.Support(),
+        builder: (_) => new HomeSeer(),
         settings: settings,
       );
       case '/hass': return new FromRightToLeft(
@@ -87,7 +90,7 @@ class TabsState extends State<Tabs> {
 
   var _title_app = null;
   int _tab = 0;
-
+  
   @override
   void initState() {
     super.initState();
@@ -116,15 +119,16 @@ class TabsState extends State<Tabs> {
     ),
 
     //Content of tabs
-    body: new PageView(
-      controller: _tabController,
-      onPageChanged: onTabChanged,
-      children: <Widget>[
-        new _firstTab.Home(),
-        new _secondTab.Dashboard(),
-        new _thirdTab.Settings()
-      ],
-    ),
+    body: _selectedDrawerIndex == 0?
+     new PageView(
+        controller: _tabController,
+        onPageChanged: onTabChanged,
+        children: <Widget>[
+          new _firstTab.Home(),
+          new _secondTab.Dashboard(),
+          new _thirdTab.Settings()
+        ],
+      ) : new HomeSeer(),
 
     //Tabs
     bottomNavigationBar: Theme.of(context).platform == TargetPlatform.iOS ?
@@ -173,16 +177,17 @@ class TabsState extends State<Tabs> {
             leading: new Icon(Icons.star),
             title: new Text('Favorites'),
             onTap: () {
-              Navigator.pop(context);
-              Navigator.of(context).pushNamed('/favs');
+              setState(() { _selectedDrawerIndex = 0; });
+              Navigator.of(context).pop();
             }
           ),
           new ListTile(
-            leading: new Icon(Icons.chat),
+            leading: new Icon(Icons.home),
             title: new Text('HomeSeer'),
             onTap: () {
-              Navigator.pop(context);
-              Navigator.of(context).pushNamed('/homeseer');
+              setState(() { _selectedDrawerIndex = 1; });
+              this._title_app = 'HomeSeer';
+              Navigator.of(context).pop();
             }
           ),
           new ListTile(
@@ -190,7 +195,7 @@ class TabsState extends State<Tabs> {
             title: new Text('HomeAssistant'),
             onTap: () {
               Navigator.pop(context);
-              Navigator.of(context).pushNamed('/hass');
+              Navigator.pushNamed(context, '/hass');
             }
           ),
           new Divider(),
